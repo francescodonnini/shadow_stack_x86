@@ -3,8 +3,8 @@
     "arguments": [
       "/usr/bin/clang++",
       "-c",
-      "-I/home/francesco/Documents/Università/TESI/llvm-project/llvm/include",
-      "-I/home/francesco/Documents/Università/TESI/llvm-project/build/include",
+      "-I/home/francesco/Documents/Università/TESI/repositories/llvm-project/llvm/include",
+      "-I/home/francesco/Documents/Università/TESI/repositories/llvm-project/build/include",
       "-std=c++17",
       "-fno-exceptions",
       "-funwind-tables",
@@ -17,15 +17,15 @@
       "-D__STDC_LIMIT_MACROS",
       "-fPIC",
       "-O3",
-      "-I/home/francesco/Documents/Università/TESI/llvm-project/build/../llvm/lib/Target/X86",
-      "-I/home/francesco/Documents/Università/TESI/llvm-project/build/lib/Target/X86",
+      "-I/home/francesco/Documents/Università/TESI/repositories/llvm-project/build/../llvm/lib/Target/X86",
+      "-I/home/francesco/Documents/Università/TESI/repositories/llvm-project/build/lib/Target/X86",
       "-o",
       "build/libX86ShadowStack.so",
       "X86ShadowStack.cpp"
     ],
-    "directory": "/home/francesco/Documents/Università/TESI/ShadowStackLLVM/shadow_stack_x86",
-    "file": "/home/francesco/Documents/Università/TESI/ShadowStackLLVM/shadow_stack_x86/X86ShadowStack.cpp",
-    "output": "/home/francesco/Documents/Università/TESI/ShadowStackLLVM/shadow_stack_x86/build/libX86ShadowStack.so"
+    "directory": "/home/francesco/Documents/Università/TESI/repositories/shadow_stack_x86",
+    "file": "/home/francesco/Documents/Università/TESI/repositories/shadow_stack_x86/X86ShadowStack.cpp",
+    "output": "/home/francesco/Documents/Università/TESI/repositories/shadow_stack_x86/build/libX86ShadowStack.so"
   },
   {
     "arguments": [
@@ -58,14 +58,14 @@
       "-tune-cpu",
       "generic",
       "-debugger-tuning=gdb",
-      "-fdebug-compilation-dir=/home/francesco/Documents/Università/TESI/ShadowStackLLVM/shadow_stack_x86",
-      "-fcoverage-compilation-dir=/home/francesco/Documents/Università/TESI/ShadowStackLLVM/shadow_stack_x86",
+      "-fdebug-compilation-dir=/home/francesco/Documents/Università/TESI/repositories/shadow_stack_x86",
+      "-fcoverage-compilation-dir=/home/francesco/Documents/Università/TESI/repositories/shadow_stack_x86",
       "-resource-dir",
       "/usr/bin/../lib/clang/22",
       "-I",
-      "/home/francesco/Documents/Università/TESI/llvm-project/llvm/include",
+      "/home/francesco/Documents/Università/TESI/repositories/llvm-project/llvm/include",
       "-I",
-      "/home/francesco/Documents/Università/TESI/llvm-project/build/include",
+      "/home/francesco/Documents/Università/TESI/repositories/llvm-project/build/include",
       "-D",
       "_GNU_SOURCE",
       "-D",
@@ -79,9 +79,9 @@
       "-D",
       "__STDC_LIMIT_MACROS",
       "-I",
-      "/home/francesco/Documents/Università/TESI/llvm-project/build/../llvm/lib/Target/X86",
+      "/home/francesco/Documents/Università/TESI/repositories/llvm-project/build/../llvm/lib/Target/X86",
       "-I",
-      "/home/francesco/Documents/Università/TESI/llvm-project/build/lib/Target/X86",
+      "/home/francesco/Documents/Università/TESI/repositories/llvm-project/build/lib/Target/X86",
       "-internal-isystem",
       "/usr/bin/../lib/gcc/x86_64-redhat-linux/16/../../../../include/c++/16",
       "-internal-isystem",
@@ -102,7 +102,7 @@
       "-fdeprecated-macro",
       "-ferror-limit",
       "19",
-      "-fmessage-length=65",
+      "-fmessage-length=191",
       "-fno-rtti",
       "-fgnuc-version=4.2.1",
       "-fskip-odr-check-in-gmf",
@@ -114,11 +114,11 @@
       "-x",
       "c++",
       "-o",
-      "/tmp/X86ShadowStack-559507.o",
+      "/tmp/X86ShadowStack-b2f87d.o",
       "X86ShadowStack.cpp"
     ],
-    "directory": "/home/francesco/Documents/Università/TESI/ShadowStackLLVM/shadow_stack_x86",
-    "file": "/home/francesco/Documents/Università/TESI/ShadowStackLLVM/shadow_stack_x86/X86ShadowStack.cpp",
-    "output": "/tmp/X86ShadowStack-559507.o"
+    "directory": "/home/francesco/Documents/Università/TESI/repositories/shadow_stack_x86",
+    "file": "/home/francesco/Documents/Università/TESI/repositories/shadow_stack_x86/X86ShadowStack.cpp",
+    "output": "/tmp/X86ShadowStack-b2f87d.o"
   }
 ]
