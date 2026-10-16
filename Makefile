@@ -1,5 +1,4 @@
--include ../local.mk
-
+LLVM_CONFIG     = llvm-config
 LLVM_BIN        = $(shell $(LLVM_CONFIG) --bindir)
 LLVM_LIB        = $(shell $(LLVM_CONFIG) --libdir)
 LLVM_BUILD_ROOT = $(shell $(LLVM_CONFIG) --obj-root)
