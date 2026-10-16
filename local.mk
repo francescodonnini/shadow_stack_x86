@@ -1,0 +1,1 @@
+LLVM_CONFIG := ../llvm-project/build/bin/llvm-config
