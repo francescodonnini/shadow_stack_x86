@@ -5,10 +5,21 @@
 #include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/CodeGen/TargetInstrInfo.h"
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
+#include "llvm/IR/Module.h"
 
 char X86ShadowStackPass::ID = 0;
 static RegisterPass<X86ShadowStackPass>
     X("x86-shadow-stack", "X86 Shadow Stack Pass", false, false);
+
+bool X86ShadowStackPass::doInitialization(Module &M) {
+  OffsetGV = M.getGlobalVariable("__ss_shadow_offset");
+  if (!OffsetGV) {
+    OffsetGV = new GlobalVariable(M, Type::getInt64Ty(M.getContext()), false,
+                                  GlobalValue::ExternalLinkage, nullptr,
+                                  "__ss_shadow_offset");
+  }
+  return false;
+}
 
 bool X86ShadowStackPass::runOnMachineFunction(MachineFunction &MF) {
   bool IsLeaf = !MF.getFrameInfo().hasCalls();
@@ -32,6 +43,25 @@ bool X86ShadowStackPass::runOnMachineFunction(MachineFunction &MF) {
   }
 
   return true;
+}
+
+void X86ShadowStackPass::emitLoadOffset(MachineBasicBlock &MBB,
+                                        MachineBasicBlock::iterator MI,
+                                        const DebugLoc &DL,
+                                        const TargetInstrInfo *TII,
+                                        Register Dst) {
+  BuildMI(MBB, MI, DL, TII->get(X86::MOV64rm), Dst)
+      .addReg(X86::RIP)
+      .addImm(1)
+      .addReg(0)
+      .addGlobalAddress(OffsetGV, 0, X86II::MO_GOTPCREL)
+      .addReg(0);
+  BuildMI(MBB, MI, DL, TII->get(X86::MOV64rm), Dst)
+      .addReg(Dst)
+      .addImm(1)
+      .addReg(0)
+      .addImm(0)
+      .addReg(0);
 }
 
 void X86ShadowStackPass::instrumentPreamble(MachineFunction &MF) {
