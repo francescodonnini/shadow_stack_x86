@@ -128,7 +128,7 @@ void X86ShadowStackPass::instrumentPreamble(MachineFunction &MF) {
       .addReg(X86::RSP)
       .addImm(1)
       .addReg(X86::R10)
-      .addImm(16)
+      .addImm(RspOffset)
       .addReg(0)
       .addReg(X86::R11);
 
