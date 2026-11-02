@@ -40,4 +40,22 @@ private:
 
   MachineBasicBlock *getOrCreateTrapBB(MachineFunction &MF, DebugLoc DL);
 };
+
+class X86ShadowStackMaskPass : public MachineFunctionPass {
+public:
+  static char ID;
+
+  X86ShadowStackMaskPass() : MachineFunctionPass(ID) {}
+
+  bool runOnMachineFunction(MachineFunction &MF) override;
+
+  StringRef getPassName() const override {
+    return "x86-shadow-stack-mask-pass";
+  }
+
+  void getAnalysisUsage(AnalysisUsage &AU) const override {
+    AU.setPreservesCFG();
+    MachineFunctionPass::getAnalysisUsage(AU);
+  }
+};
 #endif
