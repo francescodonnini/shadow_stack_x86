@@ -99,13 +99,6 @@ void X86ShadowStackPass::instrumentPreamble(MachineFunction &MF) {
     return false;
   };
 
-  auto AdjustCFI = [&](int Offset) {
-    auto CFIIndex = MF.addFrameInst(
-        MCCFIInstruction::createAdjustCfaOffset(nullptr, Offset));
-    BuildMI(MBB, MI, DL, TII->get(TargetOpcode::CFI_INSTRUCTION))
-        .addCFIIndex(CFIIndex);
-  };
-
   auto RspOffset = (int64_t)0;
   auto SpillR11 = IsRegOrAliasLiveIn(X86::R11);
   if (SpillR11) {
