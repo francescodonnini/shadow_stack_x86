@@ -228,6 +228,11 @@ static cl::opt<bool>
     ShadowStackBTR("x86-shadow-stack-btr", cl::init(false), cl::Hidden,
                    cl::desc("Turn the shadow stack store masks into btrq $47"));
 
+static cl::opt<bool> ShadowStackBTRSkipLoops(
+    "x86-shadow-stack-btr-skip-loops", cl::init(false), cl::Hidden,
+    cl::desc("With -x86-shadow-stack-btr, keep and inside loops (the mask "
+             "constant is loaded once outside the loop)"));
+
 char X86ShadowStackMaskPass::ID = 0;
 
 static constexpr unsigned GuardBit = 47;
@@ -240,6 +245,10 @@ bool X86ShadowStackMaskPass::runOnMachineFunction(MachineFunction &MF) {
 
   const auto *TII = MF.getSubtarget().getInstrInfo();
   const auto *TRI = MF.getSubtarget().getRegisterInfo();
+  const MachineLoopInfo *MLI =
+      ShadowStackBTRSkipLoops
+          ? &getAnalysis<MachineLoopInfoWrapperPass>().getLI()
+          : nullptr;
 
   // true if R is a virtual register holding the guard mask
   auto IsMask = [&](Register R) {
@@ -253,6 +262,8 @@ bool X86ShadowStackMaskPass::runOnMachineFunction(MachineFunction &MF) {
 
   bool Changed = false;
   for (auto &MBB : MF) {
+    if (MLI && MLI->getLoopFor(&MBB))
+      continue;
     for (auto &MI : make_early_inc_range(MBB)) {
       if (MI.getOpcode() != X86::AND64rr)
         continue;
