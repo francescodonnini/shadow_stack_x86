@@ -11,6 +11,11 @@ using namespace llvm;
 
 enum class ViolationStrategy { BlindWrite, Trap };
 
+namespace llvm {
+FunctionPass *createX86ShadowStackPass();
+FunctionPass *createX86ShadowStackMaskPass();
+} // namespace llvm
+
 class X86ShadowStackPass : public MachineFunctionPass {
 public:
   static char ID;

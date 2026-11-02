@@ -13,6 +13,14 @@ char X86ShadowStackPass::ID = 0;
 static RegisterPass<X86ShadowStackPass>
     X("x86-shadow-stack", "X86 Shadow Stack Pass", false, false);
 
+FunctionPass *llvm::createX86ShadowStackPass() {
+  return new X86ShadowStackPass();
+}
+
+FunctionPass *llvm::createX86ShadowStackMaskPass() {
+  return new X86ShadowStackMaskPass();
+}
+
 bool X86ShadowStackPass::doInitialization(Module &M) {
   OffsetGV = M.getGlobalVariable("__ss_shadow_offset");
   if (!OffsetGV) {
