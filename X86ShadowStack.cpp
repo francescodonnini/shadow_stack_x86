@@ -6,7 +6,6 @@
 #include "llvm/CodeGen/TargetInstrInfo.h"
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
 #include "llvm/IR/Module.h"
-#include "llvm/MC/MCDwarf.h"
 
 char X86ShadowStackPass::ID = 0;
 
