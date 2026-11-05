@@ -83,6 +83,10 @@ void X86ShadowStackPass::instrumentPreamble(MachineFunction &MF) {
     ++MI;
   }
 
+  if (MI != MBB.end() && MI->getOpcode() == X86::ENDBR64) {
+    ++MI;
+  }
+
   auto DL = MI != MBB.end() ? MI->getDebugLoc() : DebugLoc();
   const auto *TII = MF.getSubtarget().getInstrInfo();
   const auto *TRI = MF.getSubtarget().getRegisterInfo();
