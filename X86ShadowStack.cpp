@@ -9,15 +9,16 @@
 
 char X86ShadowStackPass::ID = 0;
 
+static cl::opt<bool> ShadowStackEnabled(
+    "x86-shadow-stack-pass", cl::init(false), cl::Hidden,
+    cl::desc("Save the return address on the shadow stack in the "
+             "prologue and restore it before every return"));
+
 static RegisterPass<X86ShadowStackPass>
     X("x86-shadow-stack", "X86 Shadow Stack Pass", false, false);
 
 FunctionPass *llvm::createX86ShadowStackPass() {
   return new X86ShadowStackPass();
-}
-
-FunctionPass *llvm::createX86ShadowStackMaskPass() {
-  return new X86ShadowStackMaskPass();
 }
 
 bool X86ShadowStackPass::doInitialization(Module &M) {
@@ -236,6 +237,10 @@ static cl::opt<bool> ShadowStackBTRSkipLoops(
     "x86-shadow-stack-btr-skip-loops", cl::init(false), cl::Hidden,
     cl::desc("With -x86-shadow-stack-btr, keep and inside loops (the mask "
              "constant is loaded once outside the loop)"));
+
+FunctionPass *llvm::createX86ShadowStackMaskPass() {
+  return new X86ShadowStackMaskPass();
+}
 
 char X86ShadowStackMaskPass::ID = 0;
 
