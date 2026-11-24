@@ -10,7 +10,7 @@ X86_SRC_INC      = -I$(LLVM_SRC_ROOT)/lib/Target/X86
 X86_BUILD_INC    = -I$(LLVM_BUILD_ROOT)/lib/Target/X86
 CXX              = clang++
 MIR_PLUGIN       = build/libX86ShadowStack.so
-MIR_SRC          = X86ShadowStack.cpp
+MIR_SRC          = X86ShadowStack.cpp X86ShadowMask.cpp
 
 mir-plugin: $(MIR_SRC)
 	mkdir -p build
