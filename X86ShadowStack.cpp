@@ -32,6 +32,10 @@ bool X86ShadowStackPass::doInitialization(Module &M) {
 }
 
 bool X86ShadowStackPass::runOnMachineFunction(MachineFunction &MF) {
+  if (!ShadowStackEnabled) {
+    return false;
+  }
+
   bool IsLeaf = !MF.getFrameInfo().hasCalls();
   if (IsLeaf) {
     return false;
@@ -227,84 +231,4 @@ MachineBasicBlock *X86ShadowStackPass::getOrCreateTrapBB(MachineFunction &MF,
   }
 
   return TrapBB;
-}
-
-static cl::opt<bool>
-    ShadowStackBTR("x86-shadow-stack-btr", cl::init(false), cl::Hidden,
-                   cl::desc("Turn the shadow stack store masks into btrq $47"));
-
-static cl::opt<bool> ShadowStackBTRSkipLoops(
-    "x86-shadow-stack-btr-skip-loops", cl::init(false), cl::Hidden,
-    cl::desc("With -x86-shadow-stack-btr, keep and inside loops (the mask "
-             "constant is loaded once outside the loop)"));
-
-FunctionPass *llvm::createX86ShadowStackMaskPass() {
-  return new X86ShadowStackMaskPass();
-}
-
-char X86ShadowStackMaskPass::ID = 0;
-
-static constexpr unsigned GuardBit = 47;
-static constexpr uint64_t GuardMask = ~(1ULL << GuardBit);
-
-bool X86ShadowStackMaskPass::runOnMachineFunction(MachineFunction &MF) {
-  auto &MRI = MF.getRegInfo();
-  if (!ShadowStackBTR || !MRI.isSSA())
-    return false;
-
-  const auto *TII = MF.getSubtarget().getInstrInfo();
-  const auto *TRI = MF.getSubtarget().getRegisterInfo();
-  const MachineLoopInfo *MLI =
-      ShadowStackBTRSkipLoops
-          ? &getAnalysis<MachineLoopInfoWrapperPass>().getLI()
-          : nullptr;
-
-  // true if R is a virtual register holding the guard mask
-  auto IsMask = [&](Register R) {
-    if (!R.isVirtual())
-      return false;
-    MachineInstr *Def = MRI.getVRegDef(R);
-    return Def && Def->getOpcode() == X86::MOV64ri &&
-           Def->getOperand(1).isImm() &&
-           (uint64_t)Def->getOperand(1).getImm() == GuardMask;
-  };
-
-  bool Changed = false;
-  for (auto &MBB : MF) {
-    if (MLI && MLI->getLoopFor(&MBB))
-      continue;
-    for (auto &MI : make_early_inc_range(MBB)) {
-      if (MI.getOpcode() != X86::AND64rr)
-        continue;
-
-      // btr sets the flags differently from and: only when nobody reads them
-      auto *Flags = MI.findRegisterDefOperand(X86::EFLAGS, TRI);
-      if (!Flags || !Flags->isDead())
-        continue;
-
-      // and is commutative: the constant can be either operand
-      Register Ptr = MI.getOperand(1).getReg();
-      Register Mask = MI.getOperand(2).getReg();
-      if (!IsMask(Mask)) {
-        if (!IsMask(Ptr))
-          continue;
-        std::swap(Ptr, Mask);
-      }
-
-      auto BTR = BuildMI(MBB, MI, MI.getDebugLoc(), TII->get(X86::BTR64ri8),
-                         MI.getOperand(0).getReg())
-                     .addReg(Ptr)
-                     .addImm(GuardBit);
-      BTR->findRegisterDefOperand(X86::EFLAGS, TRI)->setIsDead();
-
-      MachineInstr *MaskDef = MRI.getVRegDef(Mask);
-      MI.eraseFromParent();
-      // the constant may still feed other ands: drop it only when unused
-      if (MRI.use_empty(Mask))
-        MaskDef->eraseFromParent();
-      Changed = true;
-    }
-  }
-
-  return Changed;
 }

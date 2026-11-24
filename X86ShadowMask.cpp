@@ -4,9 +4,17 @@
 #include "MCTargetDesc/X86MCTargetDesc.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/CodeGen/LiveRegUnits.h"
+#include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/CodeGen/TargetRegisterInfo.h"
+#include "llvm/CodeGen/TargetSubtargetInfo.h"
+#include "llvm/Support/raw_ostream.h"
 #include <bitset>
 
 char X86ShadowStackMaskPass::ID = 0;
+
+static cl::opt<bool> ShadowMaskEnabled("x86-shadow-mask", cl::init(false),
+                                       cl::Hidden,
+                                       cl::desc("Mask the store instructions"));
 
 static RegisterPass<X86ShadowStackMaskPass>
     X("x86-shadow-stack-mask", "X86 Shadow Stack Mask Pass", false, false);
@@ -26,6 +34,10 @@ FunctionPass *llvm::createX86ShadowStackMaskPass() {
 }
 
 bool X86ShadowStackMaskPass::runOnMachineFunction(MachineFunction &MF) {
+  if (!ShadowMaskEnabled) {
+    return false;
+  }
+
   const auto *TRI = MF.getSubtarget().getRegisterInfo();
   for (auto &MBB : MF) {
     for (auto &MI : MBB) {
