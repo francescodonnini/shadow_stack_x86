@@ -5,6 +5,8 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/CodeGen/LiveRegUnits.h"
 #include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/CodeGen/MachineInstrBuilder.h"
+#include "llvm/CodeGen/TargetInstrInfo.h"
 #include "llvm/CodeGen/TargetRegisterInfo.h"
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
 #include "llvm/Support/raw_ostream.h"
@@ -15,22 +17,14 @@ char X86ShadowStackMaskPass::ID = 0;
 static RegisterPass<X86ShadowStackMaskPass>
     X("x86-shadow-stack-mask", "X86 Shadow Stack Mask Pass", false, false);
 
-namespace {
-constexpr MCPhysReg GPR64[] = {X86::RAX, X86::RBX, X86::RCX, X86::RDX,
-                               X86::RSI, X86::RDI, X86::RBP, X86::RSP,
-                               X86::R8,  X86::R9,  X86::R10, X86::R11,
-                               X86::R12, X86::R13, X86::R14, X86::R15};
-
-using RegSet = std::bitset<16>;
-
-}; // namespace
-
 FunctionPass *llvm::createX86ShadowStackMaskPass() {
   return new X86ShadowStackMaskPass();
 }
 
 bool X86ShadowStackMaskPass::runOnMachineFunction(MachineFunction &MF) {
+  const auto *TII = MF.getSubtarget().getInstrInfo();
   const auto *TRI = MF.getSubtarget().getRegisterInfo();
+  auto Changed = false;
   for (auto &MBB : MF) {
     for (auto &MI : MBB) {
       // Calls write into memory but they write wherever the stack pointer is
@@ -48,9 +42,27 @@ bool X86ShadowStackMaskPass::runOnMachineFunction(MachineFunction &MF) {
       Mem += X86II::getOperandBias(MI.getDesc());
       auto Base = MI.getOperand(Mem + X86::AddrBaseReg).getReg();
       auto Index = MI.getOperand(Mem + X86::AddrIndexReg).getReg();
-      errs() << "base=" << printReg(Base, TRI)
-             << " index=" << printReg(Index, TRI) << "  " << MI;
+      if (Index) {
+        continue;
+      }
+
+      if (!Base || Base == X86::RIP || Base == X86::RSP ||
+          TRI->getRegClass(X86::GR32RegClassID)->contains(Base)) {
+        continue;
+      }
+
+      if (MBB.computeRegisterLiveness(TRI, X86::EFLAGS, MI) !=
+          MachineBasicBlock::LQR_Dead) {
+        errs() << "[flags live] " << MI;
+        continue;
+      }
+
+      BuildMI(MBB, MI, MI.getDebugLoc(), TII->get(X86::BTR64ri8), Base)
+          .addReg(Base)
+          .addImm(63);
+      Changed = true;
     }
   }
-  return false;
+
+  return Changed;
 }
