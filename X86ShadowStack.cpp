@@ -9,13 +9,8 @@
 
 char X86ShadowStackPass::ID = 0;
 
-static cl::opt<bool> ShadowStackEnabled(
-    "x86-shadow-stack-pass", cl::init(false), cl::Hidden,
-    cl::desc("Save the return address on the shadow stack in the "
-             "prologue and restore it before every return"));
-
 static RegisterPass<X86ShadowStackPass>
-    X("x86-shadow-stack", "X86 Shadow Stack Pass", false, false);
+    X("x86-shadow-stack-func", "X86 Shadow Stack Function Pass", false, false);
 
 FunctionPass *llvm::createX86ShadowStackPass() {
   return new X86ShadowStackPass();
@@ -32,10 +27,6 @@ bool X86ShadowStackPass::doInitialization(Module &M) {
 }
 
 bool X86ShadowStackPass::runOnMachineFunction(MachineFunction &MF) {
-  if (!ShadowStackEnabled) {
-    return false;
-  }
-
   bool IsLeaf = !MF.getFrameInfo().hasCalls();
   if (IsLeaf) {
     return false;
